@@ -145,3 +145,47 @@ app.get('/logout', (req, res) => {
         res.send('<h1>You have logged out successfully!</h1>');
     });
 });
+
+// 📌 מסלול לשכחתי סיסמה
+app.post('/forgot-password', async (req, res) => {
+    const { email, newPassword } = req.body;
+
+    if (!email || !newPassword) {
+        return res.status(400).send('Email and new password are required');
+    }
+
+    // חיפוש המשתמש ב-Redis
+    const user = await client.hGetAll(`user:${email}`);
+
+    if (!user.email) {
+        return res.status(404).send('User not found');
+    }
+
+    // עדכון הסיסמה ב-Redis
+    await client.hSet(`user:${email}`, 'password', newPassword);
+
+    res.send('Password has been updated successfully');
+});
+
+
+// 📌 מסלול לשינוי סיסמה כשהמשתמש מחובר
+app.post('/change-password', async (req, res) => {
+    const { newPassword } = req.body;
+    const email = req.session.email; // האימייל שנשמר ב-session
+
+    if (!email || !newPassword) {
+        return res.status(400).send('Email and new password are required');
+    }
+
+    // חיפוש המשתמש ב-Redis
+    const user = await client.hGetAll(`user:${email}`);
+
+    if (!user.email) {
+        return res.status(404).send('User not found');
+    }
+
+    // עדכון הסיסמה ב-Redis
+    await client.hSet(`user:${email}`, 'password', newPassword);
+
+    res.send('Password has been changed successfully');
+});
