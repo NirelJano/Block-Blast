@@ -30,10 +30,12 @@ app.use(express.static(path.join(path.resolve(), '..', 'public')));
 // Route for user registration
 app.post('/register', async (req, res) => {
   const { username, password } = req.body;
-
+  
+  if (!username || !password) {
+    return res.status(400).send('Username and password are required');
+    }
   // שמירת שם משתמש וסיסמה ב-Redis
   await client.set(username, password);
-
   res.send('User registered successfully');
 });
 
