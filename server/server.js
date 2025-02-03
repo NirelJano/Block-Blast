@@ -1,20 +1,62 @@
-const express = require('express');
-const path = require('path');
-const cors = require('cors');
+import express from 'express';
+import path from 'path';
+import cors from 'cors';
+import { createClient } from 'redis';
 
 const app = express();
-const PORT = 3000;
+const port = 3000;
 
+// הגדרת Redis client
+const client = createClient({
+  username: 'default',
+  password: '19dqhpFEW3f79r5PXidm8K1CDsa206uf',
+  socket: {
+    host: 'redis-10687.c270.us-east-1-3.ec2.redns.redis-cloud.com',
+    port: 10687
+  }
+});
+
+client.on('error', (err) => console.log('Redis Client Error', err));
+
+await client.connect();
+
+// הגדרת middleware
 app.use(cors());
 app.use(express.json());
 
 // 📌 הגדרת תיקיית `public` כדי לטעון קבצים סטטיים
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.static(path.join(path.resolve(), 'public')));
 
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
+// Route for user registration
+app.post('/register', async (req, res) => {
+  const { username, password } = req.body;
+
+  // שמירת שם משתמש וסיסמה ב-Redis
+  await client.set(username, password);
+
+  res.send('User registered successfully');
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
+// Route for user login
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+
+  // קריאת הסיסמה ששמורה ב-Redis
+  const storedPassword = await client.get(username);
+
+  if (storedPassword === password) {
+    res.send('Login successful');
+  } else {
+    res.send('Invalid username or password');
+  }
+});
+
+// הגדרת Route לעמוד הראשי
+app.get('/', (req, res) => {
+    res.sendFile(path.join(path.resolve(), 'public', 'index.html'));
+});
+
+// שרת מאזין ב-PORT 3000
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
 });
