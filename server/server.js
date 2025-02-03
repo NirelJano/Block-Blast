@@ -25,7 +25,7 @@ app.use(cors());
 app.use(express.json());
 
 // 📌 הגדרת תיקיית `public` כדי לטעון קבצים סטטיים
-app.use(express.static(path.join(path.resolve(), 'public')));
+app.use(express.static(path.join(path.resolve(), '..', 'public')));
 
 // Route for user registration
 app.post('/register', async (req, res) => {
@@ -53,10 +53,22 @@ app.post('/login', async (req, res) => {
 
 // הגדרת Route לעמוד הראשי
 app.get('/', (req, res) => {
-    res.sendFile(path.join(path.resolve(), 'public', 'index.html'));
+    res.sendFile(path.join(path.resolve(), '..', 'public', 'index.html'));
 });
 
 // שרת מאזין ב-PORT 3000
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);
 });
+
+// 🔹 בדיקת חיבור ל-Redis
+app.get('/check', async (req, res) => {
+    try {
+      await client.set('testKey', 'testValue'); // שמירת נתון לבדיקה
+      const value = await client.get('testKey'); // שליפת הנתון
+      res.send(`Redis is working! Stored value: ${value}`);
+    } catch (error) {
+      res.status(500).send('Redis connection error');
+    }
+  });
+  
