@@ -1,212 +1,239 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const loginBtn = document.getElementById('loginBtn');
-    const registerBtn = document.getElementById('registerBtn');
-    const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
-    const changePasswordBtn = document.getElementById('changePasswordBtn');
-    const submitNewPasswordBtn = document.getElementById('submitNewPasswordBtn');
-    const logoutBtn = document.getElementById('logoutBtn');
-    const startGameBtn = document.getElementById('startGameBtn');
-    const newPasswordInput = document.getElementById('newPassword'); 
+document.addEventListener("DOMContentLoaded", () => {
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+    const scoreElement = document.getElementById("score");
+    const piecesContainer = document.getElementById("piecesContainer");
+    const exitGameBtn = document.getElementById("exitGameBtn");
+    const startGameBtn = document.getElementById("startGameBtn"); // כפתור Restart/Start Game
 
-    const loginFormContainer = document.getElementById('loginFormContainer');
-    const registerFormContainer = document.getElementById('registerFormContainer');
-    const forgotPasswordFormContainer = document.getElementById('forgotPasswordFormContainer');
-    
-    const newScreen = document.getElementById('newScreen');
+    const gridSize = 50;
+    const gridCount = 10;
+    canvas.width = gridSize * gridCount;
+    canvas.height = gridSize * gridCount;
 
-    const registerForm = document.getElementById('registerForm');
-    const loginForm = document.getElementById('loginForm');
-    const forgotPasswordForm = document.getElementById('forgotPasswordForm');
-    
-    const registerMessage = document.getElementById('registerMessage');
-    const loginMessage = document.getElementById('loginMessage');
-    const forgotPasswordMessage = document.getElementById('forgotPasswordMessage');
+    let score = 0;
+    let gameBoard = Array.from({ length: gridCount }, () => Array(gridCount).fill(null));
+    let currentPieces = [];
+    let draggedPiece = null; // לעקוב אחרי החתיכה שמגררים
 
+    const shapes = [
+        { color: "orange", blocks: [[0, 0], [1, 0], [2, 0], [1, 1]] },
+        { color: "purple", blocks: [[0, 0], [0, 1], [0, 2]] },
+        { color: "green", blocks: [[0, 0], [1, 0], [1, 1]] },
+    ];
 
-    // Check if the user is already logged in
-    fetch('/check-login-status')
-        .then(response => response.json())
-        .then(data => {
-            if (data.loggedIn) {
-                // If the user is logged in, show the game screen
-                startGameBtn.disabled = false;
-                changePasswordBtn.style.display = 'inline-block'; // הצגת כפתור שינוי סיסמא
-                registerBtn.style.display = 'none';
-                loginBtn.style.display = 'none';
-                forgotPasswordBtn.style.display = 'none';
-                newScreen.style.display = 'block';
-            } else {
-                registerFormContainer.style.display = 'none';
-                loginFormContainer.style.display = 'none';
-                forgotPasswordFormContainer.style.display = 'none';
-                newScreen.style.display = 'none';
-                registerBtn.style.display = 'inline-block';
-                loginBtn.style.display = 'inline-block';
+    // ציור הרשת
+    function drawGrid() {
+        ctx.strokeStyle = "#ccc";
+        for (let x = 0; x < canvas.width; x += gridSize) {
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.strokeRect(x, y, gridSize, gridSize);
             }
-        });
-
-    // Show registration form when "Register" button is clicked
-    registerBtn.addEventListener('click', () => {
-        registerFormContainer.style.display = 'block';
-        loginFormContainer.style.display = 'none';
-        forgotPasswordFormContainer.style.display = 'none';
-    });
-
-    // הצגת טופס התחברות
-    loginBtn.addEventListener('click', () => {
-        loginFormContainer.style.display = 'block';
-        registerFormContainer.style.display = 'none';
-        forgotPasswordFormContainer.style.display = 'none';
-    });
-
-    // הצגת טופס שכחתי סיסמה
-    forgotPasswordBtn.addEventListener('click', () => {
-        forgotPasswordFormContainer.style.display = 'block';
-        registerFormContainer.style.display = 'none';
-        loginFormContainer.style.display = 'none';
-    });
-
-    // Submit registration form
-    registerForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const email = document.getElementById('email').value;
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-
-        const response = await fetch('/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, username, password })
-        });
-
-        const result = await response.text();
-
-        if (response.ok) {
-            registerMessage.style.color = 'green';
-            registerMessage.textContent = result;
-
-            // After successful registration, navigate to the new screen (currently empty)
-            setTimeout(() => {
-                registerFormContainer.style.display = 'none';  // הסתרת טופס ההרשמה
-                loginFormContainer.style.display = 'none';  // הסתרת טופס ההתחברות
-                forgotPasswordFormContainer.style.display = 'none';  // הסתרת טופס שכחתי סיסמה
-                registerBtn.style.display = 'none';
-                loginBtn.style.display = 'none';
-                forgotPasswordBtn.style.display = 'none';
-                newScreen.style.display = 'block';  // הצגת מסך המשחק
-            }, 2000);
-        } else {
-            registerMessage.style.color = 'red';
-            registerMessage.textContent = result;
         }
-    });
+    }
 
-    // Submit login form
-    loginForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const email = document.getElementById('loginEmail').value;
-        const password = document.getElementById('loginPassword').value;
+    // יצירת חתיכות חדשות
+    function generateNewPieces() {
+        currentPieces = [];
+        piecesContainer.innerHTML = "";
 
-        const response = await fetch('/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-        });
-
-        const result = await response.text();
-
-        if (response.ok) {
-            loginMessage.style.color = 'green';
-            loginMessage.textContent = result;
-
-            // After successful login, navigate to the new screen (currently empty)
-            setTimeout(() => {
-                registerFormContainer.style.display = 'none';  // הסתרת טופס ההרשמה
-                loginFormContainer.style.display = 'none';  // הסתרת טופס ההתחברות
-                forgotPasswordFormContainer.style.display = 'none';  // הסתרת טופס שכחתי סיסמה
-                registerBtn.style.display = 'none';
-                loginBtn.style.display = 'none';
-                forgotPasswordBtn.style.display = 'none';
-                newScreen.style.display = 'block';  // הצגת מסך המשחק
-            }, 2000);
-        } else {
-            loginMessage.style.color = 'red';
-            loginMessage.textContent = result;
-        }
-    });
-
-    // שליחת טופס שכחתי סיסמה
-    forgotPasswordForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        const email = document.getElementById('forgotPasswordEmail').value;
-        const newPassword = document.getElementById('forgotPasswordNewPassword').value;
-
-        const response = await fetch('/forgot-password', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, newPassword })
-        });
-
-        const result = await response.text();
-        forgotPasswordMessage.style.color = response.ok ? 'green' : 'red';
-        forgotPasswordMessage.textContent = result;
-    });
-
-    changePasswordBtn.addEventListener('click', () => {
-        newPasswordInput.style.display = 'block';
-        submitNewPasswordBtn.style.display = 'inline-block'; // הצגת כפתור עדכון הסיסמא
-    });
-
-
-    submitNewPasswordBtn.addEventListener('click', async () => {
-        const newPassword = newPasswordInput.value;
-        if (!newPassword) {
-            changePasswordMessage.style.display = 'block';
-            changePasswordMessage.style.color = 'red';
-            changePasswordMessage.textContent = 'Please enter a new password.';
-            return;
+        const selectedShapes = [];
+        while (selectedShapes.length < 3) {
+            const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
+            if (!selectedShapes.includes(randomShape)) {
+                selectedShapes.push(randomShape);
+            }
         }
 
-        try {
-            const response = await fetch('/change-password', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ newPassword })
+        selectedShapes.forEach(shape => {
+            const pieceDiv = document.createElement("div");
+            pieceDiv.classList.add("gamePiece");
+            pieceDiv.style.position = "relative";
+            pieceDiv.style.width = `${(Math.max(...shape.blocks.map(b => b[0])) + 1) * gridSize}px`;
+            pieceDiv.style.height = `${(Math.max(...shape.blocks.map(b => b[1])) + 1) * gridSize}px`;
+
+            // יצירת בלוקים עבור כל צורה
+            shape.blocks.forEach(([dx, dy]) => {
+                const blockDiv = document.createElement("div");
+                blockDiv.classList.add("gameBlock");
+                blockDiv.style.width = `${gridSize}px`;
+                blockDiv.style.height = `${gridSize}px`;
+                blockDiv.style.backgroundColor = shape.color;
+                blockDiv.style.position = "absolute";
+                blockDiv.style.left = `${dx * gridSize}px`;
+                blockDiv.style.top = `${dy * gridSize}px`;
+                blockDiv.style.border = "2px solid black";
+                pieceDiv.appendChild(blockDiv);
             });
 
-            const result = await response.text();
+            // שמירה של המידע על הצורה
+            pieceDiv.setAttribute("data-shape", JSON.stringify(shape));
+            pieceDiv.setAttribute("draggable", true);
 
-            // הצגת הודעה שהתבצע שינוי סיסמה בהצלחה
-            changePasswordMessage.style.display = 'block';
-            changePasswordMessage.style.color = response.ok ? 'green' : 'red';
-            changePasswordMessage.textContent = response.ok ? 'Password changed successfully!' : result;
-
-            // ניקוי השדה
-            newPasswordInput.value = '';
-            newPasswordInput.style.display = 'none';
-            submitNewPasswordBtn.style.display = 'none';
-        } catch (error) {
-            changePasswordMessage.style.display = 'block';
-            changePasswordMessage.style.color = 'red';
-            changePasswordMessage.textContent = 'Error changing password, please try again.';
-            }
-        });
-    });
-
-    // Start game button (not functional yet)
-    startGameBtn.addEventListener('click', () => {
-        alert('Game starting... (Not yet implemented)');
-    });
-
-    // Logout button
-    logoutBtn.addEventListener('click', () => {
-            // ניקוי המידע על התחברות והחזרת הטפסים
-        sessionStorage.setItem('loggedIn', 'false');
-        registerFormContainer.style.display = 'none';
-        loginFormContainer.style.display = 'none';
-        newScreen.style.display = 'none';
-        registerBtn.style.display = 'inline-block';
-        loginBtn.style.display = 'inline-block';
-        forgotPasswordBtn.style.display = 'inline-block'; // החזרת כפתור שכחתי סיסמא
+            pieceDiv.addEventListener("dragstart", (event) => {
+                draggedPiece = pieceDiv;
+                event.dataTransfer.setData("shape", JSON.stringify(shape));
             });
-        
+
+            piecesContainer.appendChild(pieceDiv);
+            currentPieces.push(pieceDiv);
+        });
+    }
+
+    // בדיקה האם ניתן למקם צורה במיקום נתון
+    function canPlaceShape(shape, x, y) {
+        for (let [dx, dy] of shape.blocks) {
+            const newX = x + dx;
+            const newY = y + dy;
+            // בדיקה אם התא יוצא מגבולות הלוח
+            if (newX < 0 || newX >= gridCount || newY < 0 || newY >= gridCount) {
+                console.warn(`❌ התא מחוץ ללוח: [${newX}, ${newY}]`);
+                return false;
+            }
+            // בדיקה אם התא כבר תפוס
+            if (gameBoard[newY][newX] !== null) {
+                console.warn(`❌ התא [${newX}, ${newY}] כבר תפוס`);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // הנחת צורה – הפונקציה מחזירה true אם הצליחה
+    function placeShape(shape, x, y) {
+        console.log(`✅ ניסיון למקם צורה ב[${x},${y}]`);
+        if (canPlaceShape(shape, x, y)) {
+            shape.blocks.forEach(([dx, dy]) => {
+                const newX = x + dx;
+                const newY = y + dy;
+                gameBoard[newY][newX] = shape.color;
+                ctx.fillStyle = shape.color;
+                ctx.fillRect(newX * gridSize, newY * gridSize, gridSize, gridSize);
+                ctx.strokeRect(newX * gridSize, newY * gridSize, gridSize, gridSize);
+            });
+            score += shape.blocks.length;
+            scoreElement.textContent = score;
+            checkForFullLines();
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    // בדיקה וניקוי שורות ועמודות מלאות
+    function checkForFullLines() {
+        let linesCleared = 0;
+
+        // בדיקת שורות מלאות – לולאה מהסוף להתחלה
+        for (let y = gridCount - 1; y >= 0; y--) {
+            if (gameBoard[y].every(cell => cell !== null)) {
+                gameBoard.splice(y, 1);
+                gameBoard.unshift(Array(gridCount).fill(null));
+                linesCleared++;
+            }
+        }
+
+        // בדיקת עמודות מלאות
+        for (let x = 0; x < gridCount; x++) {
+            if (gameBoard.every(row => row[x] !== null)) {
+                gameBoard.forEach(row => row[x] = null);
+                linesCleared++;
+            }
+        }
+
+        if (linesCleared > 0) {
+            score += linesCleared * 10;
+            scoreElement.textContent = score;
+            redrawBoard();
+        }
+    }
+
+    // ציור מחדש של הלוח
+    function redrawBoard() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawGrid();
+        gameBoard.forEach((row, y) => {
+            row.forEach((cell, x) => {
+                if (cell) {
+                    ctx.fillStyle = cell;
+                    ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                    ctx.strokeRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                }
+            });
+        });
+    }
+
+    // בדיקה האם יש מהלך חוקי עבור אחת מהחתיכות שנותרו
+    function checkGameOver() {
+        for (let pieceDiv of currentPieces) {
+            const shape = JSON.parse(pieceDiv.getAttribute("data-shape") || "{}");
+            for (let y = 0; y < gridCount; y++) {
+                for (let x = 0; x < gridCount; x++) {
+                    if (canPlaceShape(shape, x, y)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    // אתחול מחדש של המשחק
+    function restartGame() {
+        gameBoard = Array.from({ length: gridCount }, () => Array(gridCount).fill(null));
+        score = 0;
+        scoreElement.textContent = score;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawGrid();
+        piecesContainer.innerHTML = "";
+        currentPieces = [];
+        generateNewPieces();
+    }
+
+    // מאזינים לאירועי גרירה ושחרור על הקנבס
+    canvas.addEventListener("dragover", (event) => {
+        event.preventDefault();
+    });
+
+    canvas.addEventListener("drop", (event) => {
+        event.preventDefault();
+        const data = event.dataTransfer.getData("shape");
+        if (!data) return;
+        const shape = JSON.parse(data);
+
+        const rect = canvas.getBoundingClientRect();
+        const dropX = event.clientX - rect.left;
+        const dropY = event.clientY - rect.top;
+        // לכסות את המקרים בקצוות
+        const gridX = Math.min(Math.floor(dropX / gridSize), gridCount - 1);
+        const gridY = Math.min(Math.floor(dropY / gridSize), gridCount - 1);
+
+        console.log(`Drop coordinates: ${dropX}, ${dropY} => Grid: [${gridX}, ${gridY}]`);
+
+        if (placeShape(shape, gridX, gridY)) {
+            if (draggedPiece) {
+                piecesContainer.removeChild(draggedPiece);
+                currentPieces = currentPieces.filter(piece => piece !== draggedPiece);
+                draggedPiece = null;
+            }
+            if (currentPieces.length === 0) {
+                generateNewPieces();
+            }
+            if (checkGameOver()) {
+                alert("Game Over!");
+                // ניתן להפעיל אתחול מחדש אוטומטי או להמתין ללחיצה
+            }
+        }
+    });
+
+    drawGrid();
+    generateNewPieces();
+
+    exitGameBtn.addEventListener("click", () => {
+        window.location.href = "index.html";
+    });
+
+    if (startGameBtn) {
+        startGameBtn.addEventListener("click", restartGame);
+    }
+});

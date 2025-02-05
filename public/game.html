@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Block Blast - Game</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Block Blast - המשחק</h1>
+
+    <button id="startGameBtn">התחל משחק</button>
+
+    <!-- קנבס המשחק -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- תצוגת ניקוד -->
+    <div id="scoreContainer">
+        <p>ניקוד: <span id="score">0</span></p>
+    </div>
+
+    <!-- בחירת חתיכה לגרירה -->
+    <div id="piecesContainer"></div>
+
+    <!-- כפתור יציאה -->
+    <button id="exitGameBtn">יציאה</button>
+
+    <script src="game.js"></script>
+</body>
+</html>

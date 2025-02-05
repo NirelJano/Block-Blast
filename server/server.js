@@ -76,27 +76,28 @@ app.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-        return res.status(400).send('Email and password are required');
+        return res.status(400).json({ success: false, message: 'Email and password are required' });
     }
 
     // קריאת פרטי המשתמש מה-Redis
     const user = await client.hGetAll(`user:${email}`);
 
-    if (!user.email) {
-        return res.status(401).send('Invalid email or password');
+    if (!user.email || user.password !== password) {
+        return res.status(401).json({ success: false, message: 'Invalid email or password' });
     }
 
-    if (user.password !== password) {
-        return res.status(401).send('Invalid email or password');
-    }
-
-    // שמירת המידע ב-session
+    // שמירת המשתמש ב-Session
     req.session.loggedIn = true;
     req.session.email = email;
     req.session.username = user.username;
 
-    res.send('Login successful');
+    // החזרת תשובה עם כתובת העמוד אליו יש להפנות את המשתמש
+    console.log("🔹 משתמש מחובר, מפנה אל game.html");
+    res.json({ success: true, redirect: 'game.html' });
 });
+
+
+ 
 
 // 📌 מסלול לבדוק אם המשתמש מחובר
 app.get('/check-login-status', (req, res) => {
@@ -115,6 +116,15 @@ app.get('/', (req, res) => {
     } else {
         // אם לא מחובר, גם אז תחזור על ה-index.html
         res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    }
+});
+
+// 📌 מסלול המאפשר גישה לעמוד המשחק רק למשתמשים מחוברים
+app.get('/game', (req, res) => {
+    if (req.session.loggedIn) {
+        res.sendFile(path.join(__dirname, '..', 'public', 'game.html'));
+    } else {
+        res.status(401).send('Access denied. Please log in.');
     }
 });
 
@@ -137,14 +147,14 @@ app.get('/check', async (req, res) => {
 
 // Route for logout
 app.get('/logout', (req, res) => {
-    // מחיקת ה-session על מנת לנתק את המשתמש
     req.session.destroy((err) => {
         if (err) {
             return res.status(500).send('Could not log out');
         }
-        res.send('<h1>You have logged out successfully!</h1>');
+        res.redirect('/'); // הפניה חזרה לדף הבית
     });
 });
+
 
 // 📌 מסלול לשכחתי סיסמה
 app.post('/forgot-password', async (req, res) => {
@@ -189,3 +199,8 @@ app.post('/change-password', async (req, res) => {
 
     res.send('Password has been changed successfully');
 });
+
+
+
+
+

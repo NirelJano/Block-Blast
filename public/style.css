@@ -1,0 +1,26 @@
+canvas {
+    border: 2px solid black;
+    display: block;
+    margin: 20px auto;
+    background-color: lightgray;
+}
+
+#piecesContainer {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+.gamePiece {
+    display: inline-block;
+    position: relative;
+    cursor: grab;
+}
+
+.gameBlock {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border: 2px solid black;
+}
