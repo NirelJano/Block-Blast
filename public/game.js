@@ -4,7 +4,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const scoreElement = document.getElementById("score");
     const piecesContainer = document.getElementById("piecesContainer");
     const exitGameBtn = document.getElementById("exitGameBtn");
-    const startGameBtn = document.getElementById("startGameBtn"); // כפתור Restart/Start Game
+    const startGameBtn = document.getElementById("startGameBtn"); // Restart/Start Game button
 
     const gridSize = 50;
     const gridCount = 10;
@@ -14,27 +14,31 @@ document.addEventListener("DOMContentLoaded", () => {
     let score = 0;
     let gameBoard = Array.from({ length: gridCount }, () => Array(gridCount).fill(null));
     let currentPieces = [];
-    let draggedPiece = null; // לעקוב אחרי החתיכה שנגררת
+    let draggedPiece = null; // Track the piece being dragged
 
-    // הוספת צורות נוספות למגוון
+    const colorMap = {
+        red: "#ff4d4d",
+        green: "#4dff88",
+        blue: "#4d88ff",
+        orange: "#ff9933",
+        purple: "#b84dff",
+        yellow: "#ffff66",
+        cyan: "#4dffff",
+    };
+
     const shapes = [
-        // צורה של T
-        { color: "#FF5733", blocks: [[1, 0], [0, 1], [1, 1], [2, 1]] },
-        // צורה של L
-        { color: "#33FF57", blocks: [[0, 0], [0, 1], [0, 2], [1, 2]] },
-        // צורה של ריבוע
-        { color: "#FFC300", blocks: [[0, 0], [1, 0], [0, 1], [1, 1]] },
-        // קו ארוך
-        { color: "#DAF7A6", blocks: [[0, 0], [0, 1], [0, 2], [0, 3]] },
-        // צורת Z
-        { color: "#C70039", blocks: [[0, 0], [1, 0], [1, 1], [2, 1]] },
-        // צורות קיימות
-        { color: "orange", blocks: [[0, 0], [1, 0], [2, 0], [1, 1]] },
-        { color: "purple", blocks: [[0, 0], [0, 1], [0, 2]] },
-        { color: "green", blocks: [[0, 0], [1, 0], [1, 1]] },
+        // Shapes with color classes
+        { colorClass: "red", blocks: [[0, 0], [1, 0], [0, 1], [1, 1]] }, // Square
+        { colorClass: "green", blocks: [[0, 0], [1, 0], [2, 0], [3, 0]] }, // Line
+        { colorClass: "blue", blocks: [[0, 0], [0, 1], [1, 1], [1, 2]] }, // Z
+        { colorClass: "orange", blocks: [[1, 0], [0, 1], [1, 1], [2, 1]] }, // T
+        { colorClass: "purple", blocks: [[0, 0], [0, 1], [0, 2]] }, // Short line
+        { colorClass: "yellow", blocks: [[0, 0], [1, 0], [0, 1]] }, // Small L
+        { colorClass: "cyan", blocks: [[0, 1], [1, 0], [1, 1], [2, 0]] }, // S reversed
+        // Add more shapes if desired
     ];
 
-    // ציור הרשת
+    // Drawing the grid
     function drawGrid() {
         ctx.strokeStyle = "#ccc";
         for (let x = 0; x <= canvas.width; x += gridSize) {
@@ -51,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // יצירת חתיכות חדשות
+    // Generate new pieces
     function generateNewPieces() {
         currentPieces = [];
         piecesContainer.innerHTML = "";
@@ -59,13 +63,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const selectedShapes = [];
         while (selectedShapes.length < 3) {
             const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
-            // בדיקה אם הצורה כבר נבחרה על פי התוכן שלה
             if (!selectedShapes.some(shape => JSON.stringify(shape) === JSON.stringify(randomShape))) {
                 selectedShapes.push(randomShape);
             }
         }
 
-        selectedShapes.forEach((shape, index) => {
+        selectedShapes.forEach((shape) => {
             const pieceDiv = document.createElement("div");
             pieceDiv.classList.add("gamePiece");
             pieceDiv.style.position = "relative";
@@ -74,35 +77,30 @@ document.addEventListener("DOMContentLoaded", () => {
             pieceDiv.style.width = `${(Math.max(...shape.blocks.map(b => b[0])) + 1) * gridSize}px`;
             pieceDiv.style.height = `${(Math.max(...shape.blocks.map(b => b[1])) + 1) * gridSize}px`;
 
-            // יצירת בלוקים עבור כל צורה
+            // Creating blocks for each shape
             shape.blocks.forEach(([dx, dy]) => {
                 const blockDiv = document.createElement("div");
                 blockDiv.classList.add("gameBlock");
-                blockDiv.style.width = `${gridSize}px`;
-                blockDiv.style.height = `${gridSize}px`;
-                blockDiv.style.backgroundColor = shape.color;
-                blockDiv.style.position = "absolute";
+                blockDiv.classList.add(shape.colorClass); // Adding color class
                 blockDiv.style.left = `${dx * gridSize}px`;
                 blockDiv.style.top = `${dy * gridSize}px`;
-                // הסרת גבול כדי למנוע חישובי גודל נוספים
-                // blockDiv.style.border = "2px solid black";
                 pieceDiv.appendChild(blockDiv);
             });
 
-            // שמירה של המידע על הצורה
+            // Save shape information
             pieceDiv.setAttribute("data-shape", JSON.stringify(shape));
             pieceDiv.setAttribute("draggable", true);
 
             pieceDiv.addEventListener("dragstart", (event) => {
                 draggedPiece = pieceDiv;
                 event.dataTransfer.setData("shape", JSON.stringify(shape));
-                // חישוב ההיסט בין העכבר לחתיכה
+                // Calculate offset between mouse and piece
                 const rect = pieceDiv.getBoundingClientRect();
                 const offsetX = event.clientX - rect.left;
                 const offsetY = event.clientY - rect.top;
                 event.dataTransfer.setData("offsetX", offsetX);
                 event.dataTransfer.setData("offsetY", offsetY);
-                // מאפשרת שקיפות בעת גרירה
+                // Make piece transparent while dragging
                 setTimeout(() => {
                     pieceDiv.style.opacity = "0.5";
                 }, 0);
@@ -117,38 +115,35 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // בדיקה האם ניתן למקם צורה במיקום נתון
+    // Check if shape can be placed at given position
     function canPlaceShape(shape, x, y) {
         for (let [dx, dy] of shape.blocks) {
             const newX = x + dx;
             const newY = y + dy;
-            // בדיקה אם התא יוצא מגבולות הלוח
+            // Check if cell is out of bounds
             if (newX < 0 || newX >= gridCount || newY < 0 || newY >= gridCount) {
-                // console.warn(`❌ התא מחוץ ללוח: [${newX}, ${newY}]`);
                 return false;
             }
-            // בדיקה אם התא כבר תפוס
+            // Check if cell is already occupied
             if (gameBoard[newY][newX] !== null) {
-                // console.warn(`❌ התא [${newX}, ${newY}] כבר תפוס`);
                 return false;
             }
         }
         return true;
     }
 
-    // הנחת צורה – הפונקציה מחזירה true אם הצליחה
+    // Place shape – returns true if successful
     function placeShape(shape, x, y) {
         if (canPlaceShape(shape, x, y)) {
             shape.blocks.forEach(([dx, dy]) => {
                 const newX = x + dx;
                 const newY = y + dy;
-                gameBoard[newY][newX] = shape.color;
-                ctx.fillStyle = shape.color;
-                ctx.fillRect(newX * gridSize, newY * gridSize, gridSize, gridSize);
-                ctx.strokeRect(newX * gridSize, newY * gridSize, gridSize, gridSize);
+                gameBoard[newY][newX] = shape.colorClass; // Use colorClass for the cell
+                // Draw the block on the canvas with styling
+                drawBlock(newX * gridSize, newY * gridSize, shape.colorClass);
             });
-            score += shape.blocks.length;
-            scoreElement.textContent = `Score: ${score}`;
+            updateScore(score += shape.blocks.length);
+            activateCanvasEffect();
             checkForFullLines();
             return true;
         } else {
@@ -156,66 +151,178 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // בדיקה וניקוי שורות ועמודות מלאות
+    function updateScore(newScore) {
+        score = newScore;
+        scoreElement.textContent = ` ${score}`;
+        
+        // הוספת מחלקה לעיצוב אנימציה
+        scoreElement.classList.add("updated");
+    
+        // הסרת האנימציה אחרי 200ms
+        setTimeout(() => {
+            scoreElement.classList.remove("updated");
+        }, 200);
+    }
+    
+    
+    function activateCanvasEffect() {
+        const canvas = document.getElementById("gameCanvas");
+        canvas.classList.add("active");
+        setTimeout(() => {
+            canvas.classList.remove("active");
+        }, 200);
+    }
+    
+    
+    // Draw block with styles
+    function drawBlock(x, y, colorClass) {
+        const color = colorMap[colorClass] || "#ccc";
+
+        // Save current context state
+        ctx.save();
+
+        // Draw rounded rectangle
+        ctx.beginPath();
+        roundedRect(ctx, x + 2, y + 2, gridSize - 4, gridSize - 4, 8);
+
+        // Create gradient to simulate 3D effect
+        const gradient = ctx.createLinearGradient(x, y, x + gridSize, y + gridSize);
+        gradient.addColorStop(0, lightenColor(color, 0.2));
+        gradient.addColorStop(1, color);
+
+        ctx.fillStyle = gradient;
+
+        // Apply shadow to simulate 3D effect
+        ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+        ctx.shadowBlur = 4;
+        ctx.shadowOffsetX = 2;
+        ctx.shadowOffsetY = 2;
+
+        ctx.fill();
+        ctx.strokeStyle = "#999";
+        ctx.stroke();
+
+        // Restore context state
+        ctx.restore();
+    }
+
+    // Utility function to draw rounded rectangle
+    function roundedRect(ctx, x, y, width, height, radius) {
+        ctx.moveTo(x + radius, y);
+        ctx.lineTo(x + width - radius, y);
+        ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+        ctx.lineTo(x + width, y + height - radius);
+        ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+        ctx.lineTo(x + radius, y + height);
+        ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+        ctx.lineTo(x, y + radius);
+        ctx.quadraticCurveTo(x, y, x + radius, y);
+        ctx.closePath();
+    }
+
+    // Function to lighten color
+    function lightenColor(color, percent) {
+        const num = parseInt(color.replace("#", ""), 16),
+            amt = Math.round(2.55 * percent * 100),
+            R = (num >> 16) + amt,
+            G = ((num >> 8) & 0x00ff) + amt,
+            B = (num & 0x0000ff) + amt;
+        return (
+            "#" +
+            (
+                0x1000000 +
+                (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+                (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+                (B < 255 ? (B < 1 ? 0 : B) : 255)
+            )
+                .toString(16)
+                .slice(1)
+        );
+    }
+
+    // Check and clear full rows and columns
     function checkForFullLines() {
         let linesCleared = 0;
-
-        // בדיקת שורות מלאות
+        let rowsToClear = [];
+        
+        // זיהוי שורות מלאות
         for (let y = 0; y < gridCount; y++) {
             if (gameBoard[y].every(cell => cell !== null)) {
-                // ניקוי השורה
-                for (let x = 0; x < gridCount; x++) {
-                    gameBoard[y][x] = null;
-                }
+                rowsToClear.push(y);
                 linesCleared++;
             }
         }
-
-        // בדיקת עמודות מלאות
+    
+        // זיהוי עמודות מלאות
+        let colsToClear = [];
         for (let x = 0; x < gridCount; x++) {
             if (gameBoard.every(row => row[x] !== null)) {
-                // ניקוי העמודה
-                for (let y = 0; y < gridCount; y++) {
-                    gameBoard[y][x] = null;
-                }
+                colsToClear.push(x);
                 linesCleared++;
             }
         }
-
+    
         if (linesCleared > 0) {
-            score += linesCleared * 10;
-            scoreElement.textContent = `Score: ${score}`;
-            // הוספת אנימציה בעת ניקוי שורות/עמודות
-            animateLineClear();
+            // הפעלת אפקט זוהר רגע לפני המחיקה
+            animateLineClear(rowsToClear, colsToClear);
+            
             setTimeout(() => {
+                // מחיקת השורות בפועל לאחר האנימציה
+                rowsToClear.forEach(y => {
+                    for (let x = 0; x < gridCount; x++) {
+                        gameBoard[y][x] = null;
+                    }
+                });
+    
+                // מחיקת העמודות בפועל לאחר האנימציה
+                colsToClear.forEach(x => {
+                    for (let y = 0; y < gridCount; y++) {
+                        gameBoard[y][x] = null;
+                    }
+                });
+    
+                updateScore(score += linesCleared * 10);
                 redrawBoard();
-            }, 300);
+            }, 300); // עיכוב מחיקה קצר לאנימציה
         }
     }
-
-    // אנימציה לניקוי שורות/עמודות
-    function animateLineClear() {
-        // ניתן להוסיף אפקט הבהוב או דהייה
+    
+    function animateLineClear(rows, cols) {
+        ctx.save();
+        ctx.fillStyle = "rgba(0, 255, 0, 0.5)"; // זוהר ירוק שקוף
+    
+        // אנימציית זוהר לשורות
+        rows.forEach(y => {
+            ctx.fillRect(0, y * gridSize, canvas.width, gridSize);
+        });
+    
+        // אנימציית זוהר לעמודות
+        cols.forEach(x => {
+            ctx.fillRect(x * gridSize, 0, gridSize, canvas.height);
+        });
+    
+        setTimeout(() => {
+            ctx.restore();
+            redrawBoard(); // ציור מחדש אחרי האפקט
+        }, 250); // עיכוב קטן לזוהר לפני מחיקה בפועל
     }
+    
 
-    // ציור מחדש של הלוח
+    // Redraw the board
     function redrawBoard() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawGrid();
         gameBoard.forEach((row, y) => {
             row.forEach((cell, x) => {
                 if (cell) {
-                    ctx.fillStyle = cell;
-                    ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize);
-                    ctx.strokeRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                    drawBlock(x * gridSize, y * gridSize, cell);
                 }
             });
         });
     }
 
-    // בדיקה האם יש מהלך חוקי עבור אחת מהחתיכות שנותרו
+    // Check if there is a valid move for any remaining pieces
     function checkGameOver() {
-        // אם אין חתיכות נוכחיות, ניצור חדשות
         if (currentPieces.length === 0) {
             generateNewPieces();
         }
@@ -233,11 +340,10 @@ document.addEventListener("DOMContentLoaded", () => {
         return true;
     }
 
-    // אתחול מחדש של המשחק
+    // Restart the game
     function restartGame() {
         gameBoard = Array.from({ length: gridCount }, () => Array(gridCount).fill(null));
-        score = 0;
-        scoreElement.textContent = `Score: ${score}`;
+        updateScore(0);
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawGrid();
         piecesContainer.innerHTML = "";
@@ -245,7 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
         generateNewPieces();
     }
 
-    // מאזינים לאירועי גרירה ושחרור על הקנבס
+    // Event listeners for dragging and dropping on the canvas
     canvas.addEventListener("dragover", (event) => {
         event.preventDefault();
     });
@@ -280,13 +386,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (checkGameOver()) {
                 setTimeout(() => {
-                    alert(`🛑 המשחק נגמר! ניקוד סופי: ${score}`);
+                    alert(`🛑 Game Over! Final Score: ${score}`);
                     restartGame();
                 }, 100);
             }
         } else {
-            // משוב חזותי במקרה שלא ניתן למקם את הצורה
-            alert("❌ לא ניתן למקם את הצורה כאן!");
+            // Visual feedback if cannot place the shape
+            alert("❌ Cannot place the shape here!");
         }
     });
 
@@ -294,6 +400,7 @@ document.addEventListener("DOMContentLoaded", () => {
     generateNewPieces();
 
     exitGameBtn.addEventListener("click", () => {
+        // Implement exit functionality if needed
         window.location.href = "index.html";
     });
 

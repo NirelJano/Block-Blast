@@ -1,7 +1,7 @@
 /* רקע דינמי */
 body {
     font-family: Arial, sans-serif;
-    background: linear-gradient(45deg, #d4fc79, #96e6a1);
+    background: linear-gradient(45deg, #1c09ed, #ffffff);
     text-align: center;
     direction: ltr; /* התאמה לאנגלית */
     transition: background 1s ease-in-out;
@@ -22,29 +22,58 @@ body {
 
 /* כותרת */
 h1 {
-    font-size: 36px;
+    font-size: 50px;
     margin-bottom: 20px;
     color: #333;
     text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-/* קנבס המשחק */
 #gameCanvas {
-    border: 5px solid #333;
-    background-color: #ffffff;
+    border: 4px solid rgba(255, 255, 255, 0.8); /* מסגרת לבנה שקופה מעט */
+    background-color: #000000; /* רקע שחור כדי להדגיש את הבלוקים */
     display: block;
-    margin: 0 auto;
+    margin: 20px auto; /* ריווח בין הניקוד לקנבס */
     border-radius: 15px;
-    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 
+        0 0 10px rgba(255, 255, 255, 0.2),  /* הילה לבנה עדינה */
+        0 0 25px rgba(0, 255, 255, 0.3),   /* ניאון טורקיז */
+        inset 0 0 10px rgba(255, 255, 255, 0.1); /* אפקט זוהר פנימי */
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
-/* תיבת הציונים */
-#score {
-    font-size: 24px;
-    margin-top: 20px;
-    color: #333;
-    font-weight: bold;
+/* אפקט קליק כשהמשחק מתרחש */
+#gameCanvas.active {
+    transform: scale(1.02);
+    box-shadow: 
+        0 0 20px rgba(255, 255, 255, 0.4),  
+        0 0 40px rgba(0, 255, 255, 0.5),  
+        inset 0 0 15px rgba(255, 255, 255, 0.2);
 }
+
+
+#score {
+    font-size: 36px;
+    font-weight: bold;
+    color: #0ade38;
+    background: rgba(0, 0, 0, 0.7); /* רקע כהה שקוף */
+    padding: 10px 20px;
+    border-radius: 10px;
+    display: inline-block;
+    position: fixed; /* מקבע את הניקוד בראש העמוד */
+    top: 10px; /* מקם בראש */
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 0 10px rgba(10, 222, 56, 0.8);
+    z-index: 1000; /* שומר על הניקוד מעל כל האלמנטים */
+}
+
+/* אפקט גדילה קל בעת עדכון */
+#score.updated {
+    transform: translateX(-50%) scale(1.2);
+    box-shadow: 0 0 20px rgba(10, 222, 56, 1);
+}
+
+
 
 /* מיכל החתיכות */
 #piecesContainer {
@@ -146,4 +175,10 @@ button:active {
 
 .lineClear {
     animation: clearLine 0.5s ease-in-out;
+}
+* {
+    box-sizing: border-box;
+}
+.gameBlock {
+    border: 1px solid black; /* אם אתה רוצה גבול דק יותר */
 }
