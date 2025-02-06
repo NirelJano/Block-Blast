@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (response.ok) {
             loginMessage.style.color = 'green';
-            loginMessage.textContent = result;
+            loginMessage.textContent = 'Logged in successfully! Redirecting to game';
 
              // מעבר ישיר לעמוד המשחק
         setTimeout(() => {
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1000);
     } else {
         loginMessage.style.color = 'red';
-        loginMessage.textContent = result.message;
+        loginMessage.textContent = 'Invalid email or password';
     }
 });
 

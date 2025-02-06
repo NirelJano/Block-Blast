@@ -385,6 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (checkGameOver()) {
+                checkAndUpdateHighScore();
                 setTimeout(() => {
                     alert(`🛑 Game Over! Final Score: ${score}`);
                     restartGame();
@@ -407,4 +408,16 @@ document.addEventListener("DOMContentLoaded", () => {
     if (startGameBtn) {
         startGameBtn.addEventListener("click", restartGame);
     }
+
+    function checkAndUpdateHighScore() {
+        fetch('/update-high-score', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ score })
+        })
+        .then(response => response.json())
+        .then(data => console.log(data.message))
+        .catch(error => console.error('Error:', error));
+    }
+    
 });
