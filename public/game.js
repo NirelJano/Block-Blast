@@ -14,9 +14,21 @@ document.addEventListener("DOMContentLoaded", () => {
     let score = 0;
     let gameBoard = Array.from({ length: gridCount }, () => Array(gridCount).fill(null));
     let currentPieces = [];
-    let draggedPiece = null; // לעקוב אחרי החתיכה שמגררים
+    let draggedPiece = null; // לעקוב אחרי החתיכה שנגררת
 
+    // הוספת צורות נוספות למגוון
     const shapes = [
+        // צורה של T
+        { color: "#FF5733", blocks: [[1, 0], [0, 1], [1, 1], [2, 1]] },
+        // צורה של L
+        { color: "#33FF57", blocks: [[0, 0], [0, 1], [0, 2], [1, 2]] },
+        // צורה של ריבוע
+        { color: "#FFC300", blocks: [[0, 0], [1, 0], [0, 1], [1, 1]] },
+        // קו ארוך
+        { color: "#DAF7A6", blocks: [[0, 0], [0, 1], [0, 2], [0, 3]] },
+        // צורת Z
+        { color: "#C70039", blocks: [[0, 0], [1, 0], [1, 1], [2, 1]] },
+        // צורות קיימות
         { color: "orange", blocks: [[0, 0], [1, 0], [2, 0], [1, 1]] },
         { color: "purple", blocks: [[0, 0], [0, 1], [0, 2]] },
         { color: "green", blocks: [[0, 0], [1, 0], [1, 1]] },
@@ -25,10 +37,17 @@ document.addEventListener("DOMContentLoaded", () => {
     // ציור הרשת
     function drawGrid() {
         ctx.strokeStyle = "#ccc";
-        for (let x = 0; x < canvas.width; x += gridSize) {
-            for (let y = 0; y < canvas.height; y += gridSize) {
-                ctx.strokeRect(x, y, gridSize, gridSize);
-            }
+        for (let x = 0; x <= canvas.width; x += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+            ctx.stroke();
+        }
+        for (let y = 0; y <= canvas.height; y += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(canvas.width, y);
+            ctx.stroke();
         }
     }
 
@@ -40,15 +59,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const selectedShapes = [];
         while (selectedShapes.length < 3) {
             const randomShape = shapes[Math.floor(Math.random() * shapes.length)];
-            if (!selectedShapes.includes(randomShape)) {
+            // בדיקה אם הצורה כבר נבחרה על פי התוכן שלה
+            if (!selectedShapes.some(shape => JSON.stringify(shape) === JSON.stringify(randomShape))) {
                 selectedShapes.push(randomShape);
             }
         }
 
-        selectedShapes.forEach(shape => {
+        selectedShapes.forEach((shape, index) => {
             const pieceDiv = document.createElement("div");
             pieceDiv.classList.add("gamePiece");
             pieceDiv.style.position = "relative";
+            pieceDiv.style.display = "inline-block";
+            pieceDiv.style.margin = "10px";
             pieceDiv.style.width = `${(Math.max(...shape.blocks.map(b => b[0])) + 1) * gridSize}px`;
             pieceDiv.style.height = `${(Math.max(...shape.blocks.map(b => b[1])) + 1) * gridSize}px`;
 
@@ -62,7 +84,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 blockDiv.style.position = "absolute";
                 blockDiv.style.left = `${dx * gridSize}px`;
                 blockDiv.style.top = `${dy * gridSize}px`;
-                blockDiv.style.border = "2px solid black";
+                // הסרת גבול כדי למנוע חישובי גודל נוספים
+                // blockDiv.style.border = "2px solid black";
                 pieceDiv.appendChild(blockDiv);
             });
 
@@ -73,6 +96,20 @@ document.addEventListener("DOMContentLoaded", () => {
             pieceDiv.addEventListener("dragstart", (event) => {
                 draggedPiece = pieceDiv;
                 event.dataTransfer.setData("shape", JSON.stringify(shape));
+                // חישוב ההיסט בין העכבר לחתיכה
+                const rect = pieceDiv.getBoundingClientRect();
+                const offsetX = event.clientX - rect.left;
+                const offsetY = event.clientY - rect.top;
+                event.dataTransfer.setData("offsetX", offsetX);
+                event.dataTransfer.setData("offsetY", offsetY);
+                // מאפשרת שקיפות בעת גרירה
+                setTimeout(() => {
+                    pieceDiv.style.opacity = "0.5";
+                }, 0);
+            });
+
+            pieceDiv.addEventListener("dragend", () => {
+                pieceDiv.style.opacity = "1";
             });
 
             piecesContainer.appendChild(pieceDiv);
@@ -87,12 +124,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const newY = y + dy;
             // בדיקה אם התא יוצא מגבולות הלוח
             if (newX < 0 || newX >= gridCount || newY < 0 || newY >= gridCount) {
-                console.warn(`❌ התא מחוץ ללוח: [${newX}, ${newY}]`);
+                // console.warn(`❌ התא מחוץ ללוח: [${newX}, ${newY}]`);
                 return false;
             }
             // בדיקה אם התא כבר תפוס
             if (gameBoard[newY][newX] !== null) {
-                console.warn(`❌ התא [${newX}, ${newY}] כבר תפוס`);
+                // console.warn(`❌ התא [${newX}, ${newY}] כבר תפוס`);
                 return false;
             }
         }
@@ -101,7 +138,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // הנחת צורה – הפונקציה מחזירה true אם הצליחה
     function placeShape(shape, x, y) {
-        console.log(`✅ ניסיון למקם צורה ב[${x},${y}]`);
         if (canPlaceShape(shape, x, y)) {
             shape.blocks.forEach(([dx, dy]) => {
                 const newX = x + dx;
@@ -112,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 ctx.strokeRect(newX * gridSize, newY * gridSize, gridSize, gridSize);
             });
             score += shape.blocks.length;
-            scoreElement.textContent = score;
+            scoreElement.textContent = `Score: ${score}`;
             checkForFullLines();
             return true;
         } else {
@@ -124,11 +160,13 @@ document.addEventListener("DOMContentLoaded", () => {
     function checkForFullLines() {
         let linesCleared = 0;
 
-        // בדיקת שורות מלאות – לולאה מהסוף להתחלה
-        for (let y = gridCount - 1; y >= 0; y--) {
+        // בדיקת שורות מלאות
+        for (let y = 0; y < gridCount; y++) {
             if (gameBoard[y].every(cell => cell !== null)) {
-                gameBoard.splice(y, 1);
-                gameBoard.unshift(Array(gridCount).fill(null));
+                // ניקוי השורה
+                for (let x = 0; x < gridCount; x++) {
+                    gameBoard[y][x] = null;
+                }
                 linesCleared++;
             }
         }
@@ -136,16 +174,28 @@ document.addEventListener("DOMContentLoaded", () => {
         // בדיקת עמודות מלאות
         for (let x = 0; x < gridCount; x++) {
             if (gameBoard.every(row => row[x] !== null)) {
-                gameBoard.forEach(row => row[x] = null);
+                // ניקוי העמודה
+                for (let y = 0; y < gridCount; y++) {
+                    gameBoard[y][x] = null;
+                }
                 linesCleared++;
             }
         }
 
         if (linesCleared > 0) {
             score += linesCleared * 10;
-            scoreElement.textContent = score;
-            redrawBoard();
+            scoreElement.textContent = `Score: ${score}`;
+            // הוספת אנימציה בעת ניקוי שורות/עמודות
+            animateLineClear();
+            setTimeout(() => {
+                redrawBoard();
+            }, 300);
         }
+    }
+
+    // אנימציה לניקוי שורות/עמודות
+    function animateLineClear() {
+        // ניתן להוסיף אפקט הבהוב או דהייה
     }
 
     // ציור מחדש של הלוח
@@ -165,6 +215,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // בדיקה האם יש מהלך חוקי עבור אחת מהחתיכות שנותרו
     function checkGameOver() {
+        // אם אין חתיכות נוכחיות, ניצור חדשות
+        if (currentPieces.length === 0) {
+            generateNewPieces();
+        }
+
         for (let pieceDiv of currentPieces) {
             const shape = JSON.parse(pieceDiv.getAttribute("data-shape") || "{}");
             for (let y = 0; y < gridCount; y++) {
@@ -182,7 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
     function restartGame() {
         gameBoard = Array.from({ length: gridCount }, () => Array(gridCount).fill(null));
         score = 0;
-        scoreElement.textContent = score;
+        scoreElement.textContent = `Score: ${score}`;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawGrid();
         piecesContainer.innerHTML = "";
@@ -201,14 +256,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!data) return;
         const shape = JSON.parse(data);
 
-        const rect = canvas.getBoundingClientRect();
-        const dropX = event.clientX - rect.left;
-        const dropY = event.clientY - rect.top;
-        // לכסות את המקרים בקצוות
-        const gridX = Math.min(Math.floor(dropX / gridSize), gridCount - 1);
-        const gridY = Math.min(Math.floor(dropY / gridSize), gridCount - 1);
+        const offsetX = parseFloat(event.dataTransfer.getData("offsetX")) || 0;
+        const offsetY = parseFloat(event.dataTransfer.getData("offsetY")) || 0;
 
-        console.log(`Drop coordinates: ${dropX}, ${dropY} => Grid: [${gridX}, ${gridY}]`);
+        const rect = canvas.getBoundingClientRect();
+        const dropX = event.clientX - rect.left - offsetX + gridSize / 2;
+        const dropY = event.clientY - rect.top - offsetY + gridSize / 2;
+
+        const gridX = Math.floor(dropX / gridSize);
+        const gridY = Math.floor(dropY / gridSize);
+
+        console.log(`Drop coordinates: ${dropX.toFixed(2)}, ${dropY.toFixed(2)} => Grid: [${gridX}, ${gridY}]`);
 
         if (placeShape(shape, gridX, gridY)) {
             if (draggedPiece) {
@@ -219,10 +277,16 @@ document.addEventListener("DOMContentLoaded", () => {
             if (currentPieces.length === 0) {
                 generateNewPieces();
             }
+
             if (checkGameOver()) {
-                alert("Game Over!");
-                // ניתן להפעיל אתחול מחדש אוטומטי או להמתין ללחיצה
+                setTimeout(() => {
+                    alert(`🛑 המשחק נגמר! ניקוד סופי: ${score}`);
+                    restartGame();
+                }, 100);
             }
+        } else {
+            // משוב חזותי במקרה שלא ניתן למקם את הצורה
+            alert("❌ לא ניתן למקם את הצורה כאן!");
         }
     });
 
