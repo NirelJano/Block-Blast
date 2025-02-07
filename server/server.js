@@ -131,9 +131,10 @@ app.get('/game', (req, res) => {
 
 
 // 📌 שרת מאזין ב-PORT 3000
-app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
+app.listen(3000, '0.0.0.0', () => {
+    console.log("Server is running at http://0.0.0.0:3000");
 });
+
 
 // 🔹 בדיקת חיבור ל-Redis
 app.get('/check', async (req, res) => {

@@ -1,34 +1,40 @@
-/* רקע דינמי */
+/* רקע הדף */
 body {
-    font-family: Arial, sans-serif;
-    background: linear-gradient(45deg, #1c09ed, #ffffff);
-    text-align: center;
-    direction: ltr; /* התאמה לאנגלית */
-    transition: background 1s ease-in-out;
+    background-image: url('./Block Blast Screen.webp'); /* עדכן לנתיב הנכון */
+    background-size: cover; /* התאמת התמונה כך שתכסה את כל המסך */
+    background-position: center; /* מיקום התמונה במרכז */
+    background-repeat: no-repeat; /* לא לחזור על התמונה */
+    background-attachment: fixed; /* השארת התמונה קבועה גם בגלילה */
+    height: 100vh;
+    display: flex;
+    justify-content: center; /* ממרכז אופקית */
+    align-items: center; /* ממרכז אנכית */
+    margin: 0;
 }
 
-/* מיכל המשחק */
-.container {
-    width: 100%;
-    max-width: 800px;
-    margin: 0 auto;
-    margin-top: 45px;
+/* קופסת הכותרת */
+.header-container {
+    background: rgba(0, 0, 0, 0.5); /* רקע כהה חצי שקוף */
     padding: 20px;
-    background: rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    border-radius: 20px;
-    box-shadow: 0px 10px 20px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s;
+    border-radius: 10px;
+    text-align: center;
+    color: white;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.3);
 }
+
+
 
 /* כותרת */
 h1 {
-    font-size: 50px;
-    margin-bottom: 20px;
-    color: #333;
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+    color: white; /* טקסט לבן */
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.7); /* צל לטקסט */
 }
-
+p {
+    color: white;
+    font-size: 1.2rem;
+}
 #gameCanvas {
     border: 4px solid rgba(255, 255, 255, 0.8); /* מסגרת לבנה שקופה מעט */
     background-color: #000000; /* רקע שחור כדי להדגיש את הבלוקים */
@@ -52,37 +58,23 @@ h1 {
 }
 
 
-#score {
-    font-size: 36px;
-    font-weight: bold;
-    color: #0ade38;
-    background: rgba(0, 0, 0, 0.7); /* רקע כהה שקוף */
+#score, #bestScore {
+    position: absolute;
+    top: 10px;
+    background: rgba(0, 0, 0, 0.7);
     padding: 10px 20px;
     border-radius: 10px;
-    display: inline-block;
-    position: fixed; /* מקבע את הניקוד בראש העמוד */
-    top: -60px; /* מקם בראש */
-    left: 25%;
-    transform: translateX(-50%);
     box-shadow: 0 0 10px rgba(10, 222, 56, 0.8);
-    z-index: 1000; /* שומר על הניקוד מעל כל האלמנטים */
+}
+
+#score {
+    left: 15%; /* הזזה לצד שמאל */
 }
 
 #bestScore {
-    font-size: 24px;
-    font-weight: bold;
-    color: #0ade38;
-    background: rgba(0, 0, 0, 0.7); /* רקע כהה שקוף */
-    padding: 10px 20px;
-    border-radius: 10px;
-    display: inline-block;
-    position: fixed; /* מקבע את הניקוד בראש העמוד */
-    top: -40px; /* מקם בראש */
-    left: 95%;
-    transform: translateX(-50%);
-    box-shadow: 0 0 10px rgba(10, 222, 56, 0.8);
-    z-index: 1000; /* שומר על הניקוד מעל כל האלמנטים */
+    right: 15%; /* הזזה לצד ימין */
 }
+
 
 /* אפקט גדילה קל בעת עדכון */
 #score.updated {
@@ -144,23 +136,22 @@ h1 {
 
 /* כפתורים מעוצבים */
 button {
-    margin: 10px;
-    padding: 12px 25px;
-    font-size: 18px;
-    font-weight: bold;
-    background: linear-gradient(to right, #ff416c, #ff4b2b);
+    background: #ff4d4d;
     color: white;
     border: none;
-    border-radius: 30px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    border-radius: 8px;
     cursor: pointer;
-    transition: all 0.3s ease-in-out;
-    box-shadow: 0px 5px 15px rgba(255, 65, 108, 0.3);
+    transition: 0.3s;
 }
 
 button:hover {
-    background: linear-gradient(to right, #ff4b2b, #ff416c);
-    transform: translateY(-2px);
+    background: #cc0000;
+    transform: scale(1.1);
 }
+
 
 button:active {
     transform: translateY(2px);
@@ -203,3 +194,72 @@ button:active {
 .gameBlock {
     border: 1px solid black; /* אם אתה רוצה גבול דק יותר */
 }
+
+/* אנימציית מעבר בין עמודים */
+.fade-out {
+    opacity: 0;
+    transition: opacity 0.5s ease-out;
+}
+
+.fade-in {
+    opacity: 0;
+    animation: fadeIn 0.6s ease-in-out forwards;
+}
+
+/* אפקט כניסה */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes rainbow {
+    0% { color: red; }
+    20% { color: orange; }
+    40% { color: yellow; }
+    60% { color: green; }
+    80% { color: blue; }
+    100% { color: red; }
+}
+
+.colorful-title {
+    font-size: 4rem;
+    font-weight: bold;
+    text-align: center;
+    text-transform: uppercase;
+    line-height: 1.1; /* מרווח בין השורות */
+    margin: 0;
+    display: inline-block;
+}
+
+.colorful-title span {
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: 3px 3px 10px rgba(0, 0, 0, 0.5);
+}
+
+/* הצגת Block ו-Blast בשתי שורות */
+.block {
+    display: block;
+}
+
+.blast {
+    display: block;
+}
+
+/* צבעים לכל אות בשתי השורות */
+.block span:nth-child(1) { color: red; }
+.block span:nth-child(2) { color: orange; }
+.block span:nth-child(3) { color: yellow; }
+.block span:nth-child(4) { color: green; }
+.block span:nth-child(5) { color: blue; }
+
+.blast span:nth-child(1) { color: cyan; }
+.blast span:nth-child(2) { color: pink; }
+.blast span:nth-child(3) { color: lime; }
+.blast span:nth-child(4) { color: violet; }
+.blast span:nth-child(5) { color: gold; }
+

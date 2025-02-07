@@ -1,4 +1,5 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener("DOMContentLoaded", function () {
+    document.body.classList.add('fade-in');
     const loginBtn = document.getElementById('loginBtn');
     const registerBtn = document.getElementById('registerBtn');
     const forgotPasswordBtn = document.getElementById('forgotPasswordBtn');
@@ -181,10 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Start game button (not functional yet)
-    startGameBtn.addEventListener('click', () => {
-        window.location.href = 'game.html'; // מעבר ישיר לעמוד המשחק
-    });
+    if (startGameBtn) {
+        startGameBtn.addEventListener('click', function () {
+            transitionToPage('game.html'); // מעבר לעמוד המשחק
+        });
+    }
     
 
     // Logout button
@@ -199,4 +201,11 @@ document.addEventListener('DOMContentLoaded', () => {
         forgotPasswordBtn.style.display = 'inline-block'; // החזרת כפתור שכחתי סיסמא
             });
      
-   
+   // פונקציה למעבר עם אנימציה
+function transitionToPage(url) {
+    document.body.classList.add('fade-out'); // הפעלת אפקט יציאה
+
+    setTimeout(() => {
+        window.location.href = url; // מעבר לעמוד החדש אחרי האנימציה
+    }, 500); // זמן בהתאם ל-transition ב-CSS
+}

@@ -7,52 +7,67 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Block Blast!</h1>
+    <div class="header-container">
+        <header>
+            <h1 class="colorful-title">
+                <span class="block">B<span>l</span><span>o</span><span>c</span><span>k</span></span>
+                <br>
+                <span class="blast">B<span>l</span><span>a</span><span>s</span><span>t</span></span>
+            </h1>
+            
+            
+            <p>מטרת המשחק היא לפוצץ בלוקים כמה שיותר מהר ולצבור נקודות. האם יש לך מה שצריך כדי להיות אלוף הבלוקים?</p>
+        </header>
 
-    <!-- Action selection - Register or Login -->
-    <button id="registerBtn">Register</button>
-    <button id="loginBtn">Login</button>
-    <button id="forgotPasswordBtn">Forgot Password</button>
+        <section class="action-buttons">
+            <button id="registerBtn">Register</button>
+            <button id="loginBtn">Login</button>
+            <button id="forgotPasswordBtn">Forgot Password</button>
+        </section>
 
-    <!-- Registration Form -->
-    <div id="registerFormContainer" style="display: none;">
-        <form id="registerForm">
-            <input type="email" id="email" placeholder="Enter email" required />
-            <input type="text" id="username" placeholder="Username" required />
-            <input type="password" id="password" placeholder="Password" required />
-            <button type="submit">Register</button>
-        </form>
-        <p id="registerMessage"></p>
-    </div>
+        <!-- Registration Form -->
+        <div id="registerFormContainer" class="form-container" style="display: none;">
+            <h2>Register</h2>
+            <form id="registerForm">
+                <input type="email" id="email" placeholder="Enter email" required />
+                <input type="text" id="username" placeholder="Username" required />
+                <input type="password" id="password" placeholder="Password" required />
+                <button type="submit">Register</button>
+            </form>
+            <p id="registerMessage"></p>
+        </div>
 
-    <!-- Login Form -->
-    <div id="loginFormContainer" style="display: none;">
-        <form id="loginForm">
-            <input type="email" id="loginEmail" placeholder="Enter email" required />
-            <input type="password" id="loginPassword" placeholder="Password" required />
-            <button type="submit">Login</button>
-        </form>
-        <p id="loginMessage"></p>
-    </div>
+        <!-- Login Form -->
+        <div id="loginFormContainer" class="form-container" style="display: none;">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <input type="email" id="loginEmail" placeholder="Enter email" required />
+                <input type="password" id="loginPassword" placeholder="Password" required />
+                <button type="submit">Login</button>
+            </form>
+            <p id="loginMessage"></p>
+        </div>
 
-    <!-- Forgot Password Form -->
-    <div id="forgotPasswordFormContainer" style="display: none;">
-        <form id="forgotPasswordForm">
-            <input type="email" id="forgotPasswordEmail" placeholder="Enter email" required />
-            <input type="password" id="forgotPasswordNewPassword" placeholder="Enter new password" required />
-            <button type="submit">Update Password</button>
-        </form>
-        <p id="forgotPasswordMessage"></p>
-    </div>
+        <!-- Forgot Password Form -->
+        <div id="forgotPasswordFormContainer" class="form-container" style="display: none;">
+            <h2>Forgot Password</h2>
+            <form id="forgotPasswordForm">
+                <input type="email" id="forgotPasswordEmail" placeholder="Enter email" required />
+                <input type="password" id="forgotPasswordNewPassword" placeholder="Enter new password" required />
+                <button type="submit">Update Password</button>
+            </form>
+            <p id="forgotPasswordMessage"></p>
+        </div>
 
-    <!-- New Screen (after successful login/register) -->
-    <div id="newScreen" style="display: none;">
-        <button id="startGameBtn">Start Game</button>
-        <button id="logoutBtn">Logout</button>
-        <button id="changePasswordBtn">Change Password</button>
-        <input type="password" id="newPassword" placeholder="Enter new password" style="display: none;" />
-        <button id="submitNewPasswordBtn" style="display: none;">Update Password</button>
-        <p id="changePasswordMessage"></p>
+        <!-- New Screen (after successful login/register) -->
+        <div id="newScreen" style="display: none;">
+            <button id="startGameBtn">Start Game</button>
+            <button id="logoutBtn">Logout</button>
+            <button id="changePasswordBtn">Change Password</button>
+            <input type="password" id="newPassword" placeholder="Enter new password" style="display: none;" />
+            <button id="submitNewPasswordBtn" style="display: none;">Update Password</button>
+            <p id="changePasswordMessage"></p>
+        </div>
     </div>
     
     <script src="main.js" defer></script>

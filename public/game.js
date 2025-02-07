@@ -168,7 +168,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (score > bestScore) {
             bestScore = score;
-            bestScoreElement.textContent = `High Score: ${bestScore}`;
+            bestScoreElement.textContent = `🏆 ${bestScore}`;
         }
     }
     
@@ -430,7 +430,7 @@ document.addEventListener("DOMContentLoaded", () => {
         .then(response => response.json())
         .then(data => {
             bestScore = data.highScore;
-            bestScoreElement.textContent = `High Score: ${data.bestScore}`;
+            bestScoreElement.textContent = `🏆 ${data.bestScore}`;
         })
         .catch(error => console.error('Error:', error));
     }
