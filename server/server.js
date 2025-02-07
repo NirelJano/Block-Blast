@@ -68,7 +68,9 @@ app.post('/register', async (req, res) => {
 
     // שמירת שם המשתמש כמזהה ייחודי
     await client.set(`username:${username}`, email);
-
+    req.session.loggedIn = true;
+    req.session.email = email;
+    req.session.username = username;
     res.send('User registered successfully');
 });
 
@@ -97,8 +99,6 @@ app.post('/login', async (req, res) => {
     res.json({ success: true, redirect: 'game.html' });
 });
 
-
- 
 
 // 📌 מסלול לבדוק אם המשתמש מחובר
 app.get('/check-login-status', (req, res) => {
@@ -205,17 +205,18 @@ app.post('/change-password', async (req, res) => {
 app.post('/update-high-score', async (req, res) => {
     const { score } = req.body;
     const email = req.session.email; // מזהה את המשתמש המחובר
-    const user = await client.hGetAll(`user:${email}`);
-    const highScore = parseInt(user.highScore) || 0;
 
     if (!email) {
         return res.status(401).send('User not logged in');
     }
-
+    
     if (typeof score !== 'number' || score < 0) {
         return res.status(400).send('Invalid score');
     }
-
+    
+    const user = await client.hGetAll(`user:${email}`);
+    const highScore = parseInt(user.highScore) || 0;
+    
     if (score > highScore) {
         await client.hSet(`user:${email}`, 'highScore', score);
         return res.json({ success: true, message: 'New high score updated!' });

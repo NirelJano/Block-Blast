@@ -391,9 +391,6 @@ document.addEventListener("DOMContentLoaded", () => {
                     restartGame();
                 }, 100);
             }
-        } else {
-            // Visual feedback if cannot place the shape
-            alert("❌ Cannot place the shape here!");
         }
     });
 

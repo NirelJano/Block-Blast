@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const response = await fetch('/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, username, password })
+            body: JSON.stringify({ email, username, password, highScore: 0 })
         });
 
         const result = await response.text();
@@ -87,13 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // After successful registration, navigate to the new screen (currently empty)
             setTimeout(() => {
-                registerFormContainer.style.display = 'none';  // הסתרת טופס ההרשמה
-                loginFormContainer.style.display = 'none';  // הסתרת טופס ההתחברות
-                forgotPasswordFormContainer.style.display = 'none';  // הסתרת טופס שכחתי סיסמה
-                registerBtn.style.display = 'none';
-                loginBtn.style.display = 'none';
-                forgotPasswordBtn.style.display = 'none';
-                newScreen.style.display = 'block';  // הצגת מסך המשחק
+                window.location.href = 'game.html'; // מעבר ישיר לעמוד המשחק
             }, 2000);
         } else {
             registerMessage.style.color = 'red';
