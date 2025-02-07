@@ -136,10 +136,14 @@ p {
 
 /* כפתורים מעוצבים */
 button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
     background: #ff4d4d;
     color: white;
     border: none;
-    padding: 12px 20px;
+    padding: 14px 20px;
     font-size: 1rem;
     font-weight: bold;
     border-radius: 8px;
@@ -152,17 +156,18 @@ button:hover {
     transform: scale(1.1);
 }
 
-
 button:active {
     transform: translateY(2px);
     box-shadow: 0px 2px 10px rgba(255, 65, 108, 0.3);
 }
 
+
 /* התאמה למובייל */
 @media (max-width: 600px) {
-    #gameCanvas {
+    button {
         width: 100%;
-        height: auto;
+        padding: 16px;
+        font-size: 1.1rem;
     }
 }
 
@@ -188,6 +193,7 @@ button:active {
 .lineClear {
     animation: clearLine 0.5s ease-in-out;
 }
+
 * {
     box-sizing: border-box;
 }
@@ -263,3 +269,113 @@ button:active {
 .blast span:nth-child(4) { color: violet; }
 .blast span:nth-child(5) { color: gold; }
 
+/* כפתורים לפי סוג */
+#registerBtn { background: #28a745; } /* ירוק */
+#registerBtn:hover { background: #218838; }
+
+#loginBtn { background: #007bff; } /* כחול */
+#loginBtn:hover { background: #0056b3; }
+
+#forgotPasswordBtn { background: #ffc107; } /* צהוב */
+#forgotPasswordBtn:hover { background: #e0a800; }
+
+#startGameBtn { background: #17a2b8; } /* טורקיז */
+#startGameBtn:hover { background: #117a8b; }
+
+#logoutBtn { background: #dc3545; } /* אדום כהה */
+#logoutBtn:hover { background: #c82333; }
+button i {
+    margin-right: 8px;
+    font-size: 1.2rem;
+}
+
+@keyframes shake {
+    0% { transform: translate(2px, 2px); }
+    25% { transform: translate(-2px, -2px); }
+    50% { transform: translate(2px, -2px); }
+    75% { transform: translate(-2px, 2px); }
+    100% { transform: translate(0, 0); }
+}
+
+#gameCanvas.shake {
+    animation: shake 0.3s ease-in-out;
+}
+@keyframes placeBlock {
+    0% { transform: scale(0.8); opacity: 0.5; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.placedBlock {
+    animation: placeBlock 0.2s ease-in-out;
+}
+/* עיצוב כללי לטפסים */
+/* עיצוב כללי לטפסים עם מיקום במרכז המסך */
+.form-container {
+    position: fixed;
+    top: 80%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    width: 350px;
+    text-align: center;
+    display: none; /* ברירת מחדל מוסתר */
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+/* עיצוב כותרת הטופס */
+.form-container h2 {
+    color: white;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+}
+
+/* שדות הקלט */
+.form-container input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    font-size: 1rem;
+    color: black;
+    background: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease-in-out;
+}
+
+/* אפקט לפוקוס על שדה קלט */
+.form-container input:focus {
+    outline: none;
+    border-color: #4dff88;
+    box-shadow: 0 0 10px rgba(77, 255, 136, 0.6);
+}
+
+/* כפתורים בתוך הטופס */
+.form-container button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    background: #4d88ff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s ease-in-out;
+}
+
+.form-container button:hover {
+    background: #357ae8;
+    transform: scale(1.05);
+}
+
+/* אנימציות כניסה */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}

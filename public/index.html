@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Block Blast</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
 </head>
 <body>
     <div class="header-container">
@@ -20,13 +22,14 @@
         </header>
 
         <section class="action-buttons">
-            <button id="registerBtn">Register</button>
-            <button id="loginBtn">Login</button>
-            <button id="forgotPasswordBtn">Forgot Password</button>
+            <button id="registerBtn"><i class="fas fa-user-plus"></i> Register</button>
+            <button id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
+            <button id="forgotPasswordBtn"><i class="fas fa-key"></i> Forgot Password</button>
         </section>
+        
 
         <!-- Registration Form -->
-        <div id="registerFormContainer" class="form-container" style="display: none;">
+        <div id="registerFormContainer" class="form-container" >
             <h2>Register</h2>
             <form id="registerForm">
                 <input type="email" id="email" placeholder="Enter email" required />
@@ -61,9 +64,10 @@
 
         <!-- New Screen (after successful login/register) -->
         <div id="newScreen" style="display: none;">
-            <button id="startGameBtn">Start Game</button>
-            <button id="logoutBtn">Logout</button>
-            <button id="changePasswordBtn">Change Password</button>
+            <p id="usernameDisplay" style="color: white; font-size: 1.2rem; font-weight: bold;"></p>
+            <button id="startGameBtn"><i class="fas fa-gamepad"></i> Start Game</button>
+            <button id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            <button id="changePasswordBtn"><i class="fas fa-lock"></i> Change Password</button>
             <input type="password" id="newPassword" placeholder="Enter new password" style="display: none;" />
             <button id="submitNewPasswordBtn" style="display: none;">Update Password</button>
             <p id="changePasswordMessage"></p>

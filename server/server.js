@@ -237,3 +237,10 @@ app.get('/api/best-score', async (req, res) => {
     const highScore = parseInt(user.highScore) || 0;
     res.json({ bestScore: highScore });
 });
+app.get("/get-username", (req, res) => {
+    if (!req.session || !req.session.user) {
+        return res.status(401).json({ error: "User not logged in" });
+    }
+    
+    res.json({ username: req.session.user.username });
+});

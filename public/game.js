@@ -104,6 +104,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 event.dataTransfer.setData("offsetX", offsetX);
                 event.dataTransfer.setData("offsetY", offsetY);
                 // Make piece transparent while dragging
+                pieceDiv.style.transition = "transform 0.2s ease-out";
+                pieceDiv.style.transform = "scale(1.1) rotate(5deg)"; // הגדלה וסיבוב קל
+                
                 setTimeout(() => {
                     pieceDiv.style.opacity = "0.5";
                 }, 0);
@@ -247,6 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 .slice(1)
         );
     }
+    
 
     // Check and clear full rows and columns
     function checkForFullLines() {
@@ -394,11 +398,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (checkGameOver()) {
                 checkAndUpdateHighScore();
+                canvas.classList.add("shake");
+
                 setTimeout(() => {
+                    canvas.classList.remove("shake");
                     alert(`🛑 Game Over! Final Score: ${score}`);
                     restartGame();
-                }, 100);
+                }, 500);
             }
+
         }
     });
 
