@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
     const scoreElement = document.getElementById("score");
+    const bestScoreElement = document.getElementById("bestScore");
     const piecesContainer = document.getElementById("piecesContainer");
     const exitGameBtn = document.getElementById("exitGameBtn");
     const startGameBtn = document.getElementById("startGameBtn"); // Restart/Start Game button
@@ -11,7 +12,9 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.width = gridSize * gridCount;
     canvas.height = gridSize * gridCount;
 
+
     let score = 0;
+    let bestScore = 0;
     let gameBoard = Array.from({ length: gridCount }, () => Array(gridCount).fill(null));
     let currentPieces = [];
     let draggedPiece = null; // Track the piece being dragged
@@ -162,6 +165,11 @@ document.addEventListener("DOMContentLoaded", () => {
         setTimeout(() => {
             scoreElement.classList.remove("updated");
         }, 200);
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestScoreElement.textContent = `High Score: ${bestScore}`;
+        }
     }
     
     
@@ -417,4 +425,14 @@ document.addEventListener("DOMContentLoaded", () => {
         .catch(error => console.error('Error:', error));
     }
     
+    function getHighScore() {
+        fetch('/api/best-score')
+        .then(response => response.json())
+        .then(data => {
+            bestScore = data.highScore;
+            bestScoreElement.textContent = `High Score: ${data.bestScore}`;
+        })
+        .catch(error => console.error('Error:', error));
+    }
 });
+

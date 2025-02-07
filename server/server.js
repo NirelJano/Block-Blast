@@ -216,7 +216,7 @@ app.post('/update-high-score', async (req, res) => {
     
     const user = await client.hGetAll(`user:${email}`);
     const highScore = parseInt(user.highScore) || 0;
-    
+
     if (score > highScore) {
         await client.hSet(`user:${email}`, 'highScore', score);
         return res.json({ success: true, message: 'New high score updated!' });
@@ -224,4 +224,15 @@ app.post('/update-high-score', async (req, res) => {
 });
 
 
+// שליפת השיא של המשתמש
+app.get('/api/best-score', async (req, res) => {
+    const email = req.session.email; // מזהה את המשתמש המחובר
 
+    if (!email) {
+        return res.status(401).send('User not logged in');
+    }
+
+    const user = await client.hGetAll(`user:${email}`);
+    const highScore = parseInt(user.highScore) || 0;
+    res.json({ bestScore: highScore });
+});
