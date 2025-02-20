@@ -7,11 +7,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const submitNewPasswordBtn = document.getElementById('submitNewPasswordBtn');
     const logoutBtn = document.getElementById('logoutBtn');
     const startGameBtn = document.getElementById('startGameBtn');
+    const getTopScoresBtn = document.getElementById('getTopScoresBtn');
     const newPasswordInput = document.getElementById('newPassword'); 
 
     const loginFormContainer = document.getElementById('loginFormContainer');
     const registerFormContainer = document.getElementById('registerFormContainer');
     const forgotPasswordFormContainer = document.getElementById('forgotPasswordFormContainer');
+    const scoresContainer = document.getElementById('scoresContainer');
     
     const newScreen = document.getElementById('newScreen');
 
@@ -146,6 +148,33 @@ document.addEventListener("DOMContentLoaded", function () {
         submitNewPasswordBtn.style.display = 'inline-block'; // הצגת כפתור עדכון הסיסמא
     });
 
+    getTopScoresBtn.addEventListener('click', async () => {
+        try {
+            // שליחת בקשת GET לשרת
+            const response = await fetch('/top-scores');
+            if (!response.ok) {
+                throw new Error('Failed to fetch top scores');
+            }
+    
+            // המרת התגובה ל-JSON
+            const { topScores } = await response.json();
+    
+            // נקה תוכן קודם
+            scoresContainer.innerHTML = '';
+    
+            // הצגת שלוש התוצאות המובילות
+            topScores.forEach((score, index) => {
+                const scoreElement = document.createElement('div');
+                scoreElement.textContent = `${index + 1}. ${score.username}: ${score.score}`;
+                scoresContainer.appendChild(scoreElement);
+            });
+            
+        } catch (error) {
+            console.error('Error fetching top scores:', error);
+            scoresContainer.innerHTML = '<p>Failed to load top scores. Please try again later.</p>';
+        }
+    });
+    
 
     submitNewPasswordBtn.addEventListener('click', async () => {
         const newPassword = newPasswordInput.value;

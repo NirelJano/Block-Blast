@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     let score = 0;
-    let bestScore = 0;
+    let bestScore = getHighScore();
     let gameBoard = Array.from({ length: gridCount }, () => Array(gridCount).fill(null));
     let currentPieces = [];
     let draggedPiece = null; // Track the piece being dragged
@@ -160,14 +160,6 @@ document.addEventListener("DOMContentLoaded", () => {
     function updateScore(newScore) {
         score = newScore;
         scoreElement.textContent = ` ${score}`;
-        
-        // הוספת מחלקה לעיצוב אנימציה
-        scoreElement.classList.add("updated");
-    
-        // הסרת האנימציה אחרי 200ms
-        setTimeout(() => {
-            scoreElement.classList.remove("updated");
-        }, 200);
 
         if (score > bestScore) {
             bestScore = score;

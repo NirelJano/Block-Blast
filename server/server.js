@@ -244,3 +244,41 @@ app.get("/get-username", (req, res) => {
     
     res.json({ username: req.session.user.username });
 });
+
+app.get('/top-scores', async (req, res) => {
+    try {
+        console.log("Fetching all scores from Redis...");
+
+        // שליפת כל המשתמשים והציונים מ-Redis
+        const allScores = await client.zRange('topScores', 0, -1, { WITHSCORES: true });
+
+        if (allScores.length === 0) {
+            console.log("No scores found in the leaderboard.");
+            return res.status(404).json({ message: 'No scores found' });
+        }
+
+        // הפיכת התוצאות לרשימה של אובייקטים
+        const scores = [];
+        for (let i = 0; i < allScores.length; i += 2) {
+            scores.push({ username: allScores[i], score: parseInt(allScores[i + 1], 10) });
+        }
+
+        // מיון התוצאות בסדר יורד
+        scores.sort((a, b) => b.score - a.score);
+
+        // לקיחת שלושת הציונים הגבוהים ביותר
+        const top3 = scores.slice(0, 3);
+
+        console.log("Top 3 scores:", top3);
+
+        // שליחת התוצאות ללקוח
+        res.json(top3);
+    } catch (error) {
+        console.error('Error fetching top scores:', error);
+        res.status(500).json({ message: 'Error fetching top scores' });
+    }
+});
+
+
+
+
