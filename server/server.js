@@ -122,11 +122,10 @@ app.get('/', (req, res) => {
 
 // 📌 מסלול המאפשר גישה לעמוד המשחק רק למשתמשים מחוברים
 app.get('/game', (req, res) => {
-    if (req.session.loggedIn) {
-        res.sendFile(path.join(__dirname, '..', 'public', 'game.html'));
-    } else {
-        res.status(401).send('Access denied. Please log in.');
+    if (!req.session.loggedIn) {
+        return res.status(401).json({ error: 'User not logged in' });
     }
+    res.sendFile(path.join(__dirname, '..', 'public', 'game.html'));
 });
 
 
@@ -151,11 +150,13 @@ app.get('/check', async (req, res) => {
 app.get('/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
-            return res.status(500).send('Could not log out');
+            return res.status(500).json({ success: false, message: 'Could not log out' });
         }
-        res.redirect('/'); // הפניה חזרה לדף הבית
+        res.json({ success: true, message: 'Logged out successfully' });
     });
 });
+
+
 
 
 // 📌 מסלול לשכחתי סיסמה
@@ -203,6 +204,7 @@ app.post('/change-password', async (req, res) => {
 });
 
 
+// פונקציה לעדכון שיא אישי
 app.post('/update-high-score', async (req, res) => {
     const { score } = req.body;
     const email = req.session.email; // מזהה את המשתמש המחובר
@@ -215,35 +217,47 @@ app.post('/update-high-score', async (req, res) => {
         return res.status(400).send('Invalid score');
     }
     
+    // שליפת המשתמש מה-Redis
     const user = await client.hGetAll(`user:${email}`);
     const highScore = parseInt(user.highScore) || 0;
 
+    // אם הציון החדש גבוה מהשיא הנוכחי - מעדכן
     if (score > highScore) {
         await client.hSet(`user:${email}`, 'highScore', score);
+        // עדכון לוח השיאים הגלובלי - משתמשים מזוהים לפי req.session.username
+        await client.zAdd('topScores', { score: score, value: req.session.username });
         return res.json({ success: true, message: 'New high score updated!' });
+    } else {
+        // במקרה שהציון החדש לא גבוה יותר - שולח תגובה מתאימה
+        return res.json({ success: false, message: 'Score not high enough' });
     }
 });
 
 
-// שליפת השיא של המשתמש
+
+
+// פונקציה לשליפת השיא האישי של המשתמש
 app.get('/api/best-score', async (req, res) => {
     const email = req.session.email; // מזהה את המשתמש המחובר
 
     if (!email) {
-        return res.status(401).send('User not logged in');
+        return res.status(401).json({ error: 'User not logged in' });
     }
-
+    
     const user = await client.hGetAll(`user:${email}`);
     const highScore = parseInt(user.highScore) || 0;
     res.json({ bestScore: highScore });
 });
+
+
 app.get("/get-username", (req, res) => {
-    if (!req.session || !req.session.user) {
+    if (!req.session || !req.session.username) {
         return res.status(401).json({ error: "User not logged in" });
     }
     
-    res.json({ username: req.session.user.username });
+    res.json({ username: req.session.username });
 });
+
 
 app.get('/top-scores', async (req, res) => {
     try {

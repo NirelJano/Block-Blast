@@ -14,7 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
     let score = 0;
-    let bestScore = getHighScore();
+    let bestScore = 0;
+    getHighScore();
     let gameBoard = Array.from({ length: gridCount }, () => Array(gridCount).fill(null));
     let currentPieces = [];
     let draggedPiece = null; // Track the piece being dragged
@@ -418,6 +419,7 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch('/update-high-score', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
+            credentials: 'include', // חשוב – שולח את ה־cookies
             body: JSON.stringify({ score })
         })
         .then(response => response.json())
@@ -425,14 +427,18 @@ document.addEventListener("DOMContentLoaded", () => {
         .catch(error => console.error('Error:', error));
     }
     
+    
     function getHighScore() {
-        fetch('/api/best-score')
+        fetch('/api/best-score', {
+            credentials: 'include' // חשוב – שולח את ה־cookies
+        })
         .then(response => response.json())
         .then(data => {
-            bestScore = data.highScore;
+            bestScore = data.bestScore;
             bestScoreElement.textContent = `🏆 ${data.bestScore}`;
         })
         .catch(error => console.error('Error:', error));
     }
+    
 });
 
