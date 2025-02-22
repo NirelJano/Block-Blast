@@ -148,31 +148,32 @@ document.addEventListener("DOMContentLoaded", function () {
         submitNewPasswordBtn.style.display = 'inline-block'; // הצגת כפתור עדכון הסיסמא
     });
 
-    getTopScoresBtn.addEventListener('click', async () => {
-        try {
-            // שליחת בקשת GET לשרת
-            const response = await fetch('/top-scores');
-            if (!response.ok) {
-                throw new Error('Failed to fetch top scores');
-            }
+    getTopScoresBtn.addEventListener('click', async () => {  
+        try {  
+            // שליחת בקשת GET לשרת  
+            const response = await fetch('/top-scores');  
+            if (!response.ok) {  
+                throw new Error('Failed to fetch top scores');  
+            }  
     
-            // המרת התגובה ל-JSON
-            const { topScores } = await response.json();
-    
-            // נקה תוכן קודם
-            scoresContainer.innerHTML = '';
-    
-            // הצגת שלוש התוצאות המובילות
-            topScores.forEach((score, index) => {
-                const scoreElement = document.createElement('div');
-                scoreElement.textContent = `${index + 1}. ${score.username}: ${score.score}`;
-                scoresContainer.appendChild(scoreElement);
-            });
+            // המרת התגובה ל-JSON  
+            const topScores = await response.json(); // עדכון כאן - אין צורך ב-destructuring  
             
-        } catch (error) {
-            console.error('Error fetching top scores:', error);
-            scoresContainer.innerHTML = '<p>Failed to load top scores. Please try again later.</p>';
-        }
+            // נקה תוכן קודם  
+            scoresContainer.innerHTML = '';  
+            
+            // הצגת שלוש התוצאות המובילות  
+            topScores.forEach((score, index) => {  
+                const scoreElement = document.createElement('div');  
+                scoreElement.classList.add('scoreItem'); // הוסף את הקלאס scoreItem  
+                scoreElement.innerHTML = `<span class="rank">${index + 1}.</span> ${score.username}: ${score.score}`;  
+                scoresContainer.appendChild(scoreElement);  
+            });
+    
+        } catch (error) {  
+            console.error('Error fetching top scores:', error);  
+            scoresContainer.innerHTML = '<p>Failed to load top scores. Please try again later.</p>';  
+        }  
     });
     
 
